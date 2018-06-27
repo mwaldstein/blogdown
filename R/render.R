@@ -42,7 +42,7 @@ build_site = function(
   if (method == 'custom') return()
   files = list_rmds('content', TRUE)
   if (!local && length(files) && getOption('blogdown.skip.drafts', FALSE)) {
-    files = files[!mapply(isDraft, files)]
+    files = files[!mapply(is_draft, files)]
   }
   if (local && length(files)) {
     files = files[mapply(require_rebuild, output_file(files), files)]
