@@ -41,6 +41,9 @@ build_site = function(
   on.exit(run_script('R/build.R', as.character(local)), add = TRUE)
   if (method == 'custom') return()
   files = list_rmds('content', TRUE)
+  if (!local && length(files) && getOption('blogdown.skip.drafts', FALSE)) {
+    files = files[!mapply(isDraft, files)]
+  }
   if (local && length(files)) {
     files = files[mapply(require_rebuild, output_file(files), files)]
   }
@@ -48,6 +51,22 @@ build_site = function(
   if (run_hugo) on.exit(hugo_build(local), add = TRUE)
   invisible()
 }
+
+yaml_bool = function(x) {
+  x = tolower(trimws(x))
+  return(x %in% c("true", "yes", "on", "y"))
+}
+
+is_draft = function(f) {
+  yml = fetch_yaml2(f)
+  draft.yml = yml[startsWith(yml, "draft:")]
+  if (length(draft.yml)) {
+    return(yaml_bool(sub("^.*:", "", draft.yml[length(draft.yml)])))
+  } else {
+    return(getOption('blogdown.draft.output', FALSE))
+  }
+}
+
 
 list_rmds = function(dir, check = FALSE) {
   files = list.files(dir, rmd_pattern, recursive = TRUE, full.names = TRUE)
